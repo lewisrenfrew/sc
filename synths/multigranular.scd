@@ -22,8 +22,8 @@
 // TOP ROW BUTTONS (8):    toggle mute per voice (latching). fader sets unmuted level.
 //
 // BOTTOM ROW BUTTONS (8): snapshot preset system (momentary — configured in LCXL Editor)
-//   short press (<3s) = recall snapshot
-//   long press  (3s+) = save current state of all 8 voices to that slot
+//   short press (<1.5s) = recall snapshot
+//   long press  (1.5s+) = save current state of all 8 voices to that slot
 //   snapshots store: vol, semitones, density, pos per voice
 //   vol is restored silently (mute state unaffected), texture params glide if ~fadeTime > 0
 //
@@ -115,6 +115,9 @@ SynthDef(\granular, {
 
 s.sync;
 
+// --- MIDI out (LED feedback) ---
+~mout = MIDIOut(2);  // LCXL3 1 MIDI
+
 // --- MIDI responders ---
 MIDIdef.freeAll;
 
@@ -127,8 +130,7 @@ MIDIdef.freeAll;
 ~held      = Array.fill(8, false);
 ~synths    = Array.newClear(8);
 
-// 8 snapshot slots. Transition time in seconds (0 = instant).
-// Change ~fadeTime before recalling to glide between states.
+// 8 snapshot slots. nil = empty. Re-evaluating setup always clears these.
 ~snapshots = Array.fill(8, nil);
 ~pressTime = Array.fill(8, nil);
 ~fadeTime  = 0.0;
@@ -150,18 +152,21 @@ MIDIdef.freeAll;
     MIDIdef.cc(("v_semi_" ++ i).asSymbol, {|val|
         ~semitones[i] = val.linlin(0, 127, -24, 24);
         ~synths[i].set(\semitones, ~semitones[i]);
+        ~mout.control(0, 13 + i, val);
     }, 13 + i, 0);
 
     // Encoder 2 — density (2 to 80 grains/sec)
     MIDIdef.cc(("v_dens_" ++ i).asSymbol, {|val|
         ~density[i] = val.linlin(0, 127, 2, 80);
         ~synths[i].set(\density, ~density[i]);
+        ~mout.control(0, 21 + i, val);
     }, 21 + i, 0);
 
     // Encoder 3 — pos (0.0 to 1.0)
     MIDIdef.cc(("v_pos_" ++ i).asSymbol, {|val|
         ~pos[i] = val.linlin(0, 127, 0.0, 1.0);
         ~synths[i].set(\pos, ~pos[i]);
+        ~mout.control(0, 29 + i, val);
     }, 29 + i, 0);
 });
 
@@ -174,7 +179,7 @@ MIDIdef.freeAll;
             if(~pressTime[i].notNil) {
                 var elapsed = Main.elapsedTime - ~pressTime[i];
                 ~pressTime[i] = nil;
-                if(elapsed >= 3.0) {
+                if(elapsed >= 1.5) {
                     ~snapshots[i] = Array.fill(8, {|v|
                         [~vols[v], ~semitones[v], ~density[v], ~pos[v]]
                     });
@@ -197,6 +202,9 @@ MIDIdef.freeAll;
                                 \pos,           ~pos[v],
                                 \pos_lag,       fade
                             );
+                            ~mout.control(0, 13 + v, ~semitones[v].linlin(-24, 24, 0, 127).round.asInteger);
+                            ~mout.control(0, 21 + v, ~density[v].linlin(2, 80, 0, 127).round.asInteger);
+                            ~mout.control(0, 29 + v, ~pos[v].linlin(0.0, 1.0, 0, 127).round.asInteger);
                         });
                         if(fade > 0) {
                             SystemClock.sched(fade + 0.05, {
@@ -218,6 +226,13 @@ MIDIdef.freeAll;
             };
         };
     }, 45 + i, 0);
+});
+
+// Reset LED rings to initial positions on setup.
+8.do({|i|
+    ~mout.control(0, 13 + i, ~semitones[i].linlin(-24, 24, 0, 127).round.asInteger);
+    ~mout.control(0, 21 + i, ~density[i].linlin(2, 80, 0, 127).round.asInteger);
+    ~mout.control(0, 29 + i, ~pos[i].linlin(0.0, 1.0, 0, 127).round.asInteger);
 });
 
 "Setup complete — evaluate the play block now.".postln;
@@ -258,3 +273,11 @@ MIDIdef.freeAll;
 // LOAD: run after setup+play to restore a saved session.
 // WARNING: do not run before saving in-memory snapshots — it will overwrite them.
 ~snapshots = Object.readArchive("C:/Users/Lewis Renfrew/Projects/personal/sc/snapshots.scd");
+
+// =============================================================================
+// TWEAKABLES — safe to evaluate individually at any time
+// =============================================================================
+~fadeTime = 0.0;    // snapshot transition time in seconds (0 = instant)
+~fadeTime = 2.0;
+~fadeTime = 5.0;
+~fadeTime = 10.0;
