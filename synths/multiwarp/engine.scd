@@ -38,6 +38,9 @@
 s.waitForBoot({
     Routine({
 
+    // Capture snapshot path at load time while nowExecutingPath is valid.
+    ~wsnapshotPath = thisProcess.nowExecutingPath.dirname +/+ "../../snapshots/" ++ ~wset ++ ".scd";
+
     // --- MIDI ---
     MIDIClient.init;
     MIDIIn.connectAll;
@@ -169,7 +172,8 @@ s.waitForBoot({
                         ~wsnapshots[i] = Array.fill(8, {|v|
                             [~wvols[v], ~wsemitones[v], ~wspeed[v], ~wloopStart[v], ~wloopLen[v]]
                         });
-                        ("Snapshot % saved.".format(i + 1)).postln;
+                        ~wsnapshots.writeArchive(~wsnapshotPath);
+                        ("Snapshot % saved and persisted.".format(i + 1)).postln;
                     } {
                         if(~wsnapshots[i].notNil) {
                             var fade = ~wfadeTime;
@@ -236,6 +240,12 @@ s.waitForBoot({
         ~mout.control(0, 21 + i, 0);
         ~mout.control(0, 29 + i, ~wspeed[i].linlin(0.1, 3.0, 0, 127).round.asInteger);
     });
+
+    // Auto-load snapshots if a saved session exists for this set.
+    if(File.exists(~wsnapshotPath)) {
+        ~wsnapshots = Object.readArchive(~wsnapshotPath);
+        ("Snapshots loaded from %".format(~wsnapshotPath)).postln;
+    };
 
     "Ready.".postln;
 

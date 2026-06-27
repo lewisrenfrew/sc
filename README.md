@@ -1,6 +1,6 @@
 # sc — SuperCollider instruments
 
-Two live performance instruments controlled by a Novation Launch Control XL, built in SuperCollider and edited in VS Code.
+Two live performance instruments controlled by a Novation Launch Control XL, built in SuperCollider and edited in VS Code. I chose to build in VS code because I am at home there, but you could just as easily (if not more easily!) build this in the IDE that ships with SuperCollider.
 
 ## Setup
 
