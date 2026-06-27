@@ -1,63 +1,101 @@
-# sc — SuperCollider learning workspace
+# sc — SuperCollider instruments
 
-A starter project for learning SuperCollider, meant to be opened in VS Code.
+Two live performance instruments controlled by a Novation Launch Control XL, built in SuperCollider and edited in VS Code.
 
-## One-time setup
+## Setup
 
-1. Install [SuperCollider](https://supercollider.github.io/downloads) (the language + server, `scsynth`/`sclang`).
-2. In VS Code, install the **SuperCollider** extension (publisher: Bent Bisballe Nyeng). It lets you evaluate code blocks against the server directly from VS Code, just like the built-in scide editor.
-3. Open this `sc` folder as a VS Code workspace.
-4. Open a terminal in VS Code (View > Terminal) and run `claude` to have Claude Code available alongside the editor.
+1. Install [SuperCollider](https://supercollider.github.io/downloads)
+2. Install the **SuperCollider** VS Code extension (publisher: rogervila)
+3. Connect a Novation Launch Control XL
+4. Place samples in `samples/a/` (or whichever letter set you want) named `1.wav` through `8.wav`
+5. Boot the SuperCollider server (`Ctrl+B` in the extension)
 
-## The workflow
+---
 
-SuperCollider is mostly used interactively, not run-and-done like a script:
+## multiwarp
 
-1. Boot the server (`Ctrl+B` in the SC extension, or evaluate `Server.default.boot` — see `boot.scd`).
-2. Place your cursor on a line or select a block of code and evaluate it (`Ctrl+Enter` by default). You'll hear sound change in real time.
-3. Iterate: tweak a parameter, re-evaluate, listen again.
-4. Use `Ctrl+.` (or the equivalent stop command) to silence everything if things get noisy or stuck.
+**`synths/multiwarp/multiwarp.scd`**
 
-Claude Code can't do this evaluate-and-listen loop for you — that part is on you and your ears. What it's good for: explaining error messages, writing/refactoring SynthDefs and Patterns, suggesting exercises, and reviewing code for idiomatic SuperCollider style. Keep it in a terminal pane next to the editor.
+8-voice warp looper. Each voice independently loops a different sample with decoupled pitch and speed control. Designed for moment archaeology — finding and preserving interesting interactions between sources.
+
+### Controls (Launch Control XL)
+
+| Control | Function |
+|---|---|
+| Fader | Volume (0 to 1.5) |
+| Top button (hold) | Shift — fader controls pitch while held |
+| Encoder 1 | Loop start point (0.0 to 1.0) |
+| Encoder 2 | Loop length (exponential, biased toward short) |
+| Encoder 3 | Playback speed (0.1× to 3.0×, pitch-compensated) |
+| Bottom button (short press) | Recall snapshot |
+| Bottom button (long press 1.5s) | Save snapshot |
+
+Speed and pitch are fully decoupled: speed stretches or compresses time without affecting pitch. Semitones shifts pitch independently via PitchShift.
+
+### Snapshot system
+
+8 snapshot slots (one per bottom button). Each snapshot stores the full state of all 8 voices. Snapshots morph between states over a configurable fade time (`~wfadeTime`).
+
+### Sample sets
+
+Samples are organised into lettered sets (`samples/a/`, `samples/b/`, etc.). Set `~wset = "a"` before booting to select which set loads. Snapshots are stored per-set in `snapshots/a.scd` etc.
+
+### To use
+
+1. Set `~wset` to your chosen letter in `multiwarp.scd`
+2. Evaluate the boot block — wait for "Ready." in the Post Window
+3. Raise faders to bring voices in
+4. Use the tweakables below the boot block to set fade time, randomise params, etc.
+
+---
+
+## multigranular
+
+**`synths/multigranular.scd`**
+
+8-voice granular synthesizer. Each voice plays a different sample granularly with independent pitch, density and position control.
+
+### Controls (Launch Control XL)
+
+| Control | Function |
+|---|---|
+| Fader | Volume (0 to 1.5) |
+| Top button | Mute toggle (latching) |
+| Encoder 1 | Pitch (semitones, -24 to +24) |
+| Encoder 2 | Grain density (2 to 80 grains/sec) |
+| Encoder 3 | Buffer position (0.0 to 1.0) |
+| Bottom button (short press) | Recall snapshot |
+| Bottom button (long press 1.5s) | Save snapshot |
+
+### To use
+
+1. Place samples named `1.wav` through `8.wav` in `samples/a/`
+2. Evaluate the setup block — wait for "Setup complete." in the Post Window
+3. Evaluate the play block
+4. Unmute voices with the top row buttons
+
+---
 
 ## Folder structure
 
 ```
 sc/
-  boot.scd               -- server boot/quit snippets, run this first each session
   synths/
-    basics.scd            -- simple SynthDef examples (sine, saw, filtered noise)
-    granular.scd          -- single-voice granular synthesis experiments
-    multigranular.scd     -- main instrument (see below)
+    multiwarp/
+      multiwarp.scd   — boot and tweakables (open this)
+      engine.scd      — instrument implementation
+    multigranular.scd — granular instrument
   samples/
-    1.wav .. 8.wav        -- audio samples for the multigranular instrument (not committed)
-  patterns/
-    basics.scd             -- Pattern (Pbind/Pseq) examples for sequencing
-  exercises/
-    01_first_sounds.scd    -- guided exercise: make your first sounds
-    02_patterns.scd         -- guided exercise: sequence some notes
+    a/                — sample set a (1.wav … 8.wav)
+    b/                — sample set b
+    …                 — sets c through z
+  snapshots/
+    a.scd             — saved snapshots for set a (generated, not committed)
+    …
 ```
 
-## multigranular.scd
+## Notes
 
-An 8-voice live granular instrument controlled by a Novation Launch Control XL.
-
-Each voice plays a different sample granularly, with independent pitch, grain density, and buffer position. All 8 voices are mapped to the LCXL's 8 channels: fader = volume, 3 encoders = semitones / density / position, top row buttons = mute toggles, bottom row buttons = snapshot preset system (short press = recall, long press 3s = save).
-
-**To use:**
-1. Place samples named `1.wav` through `8.wav` in `sc/samples/`
-2. Connect the Launch Control XL
-3. Boot the SuperCollider server
-4. Evaluate the setup block in `multigranular.scd`, wait for "Setup complete"
-5. Evaluate the play block
-
-The `samples/` folder is intentionally not committed — add your own audio files.
-
-## Suggested first session
-
-1. Open `boot.scd`, evaluate the boot line, wait for "Server ... boot" confirmation in the console.
-2. Open `synths/basics.scd`, evaluate each SynthDef definition, then evaluate the example `Synth(...)` calls one at a time.
-3. Open `exercises/01_first_sounds.scd` and follow the prompts.
-4. When ready, move on to `patterns/basics.scd` and `exercises/02_patterns.scd`.
-
-Ask Claude Code (in the terminal) to explain anything that doesn't make sense, or to suggest a next exercise once you've worked through these.
+- Samples are not committed — add your own
+- Snapshot files are not committed — generated locally by the instruments
+- The LCXL top row buttons should be set to **momentary** in Novation Components for multiwarp (shift behaviour). Bottom row buttons should be momentary on both instruments.
