@@ -42,7 +42,7 @@ Samples are organised into lettered sets (`samples/a/`, `samples/b/`, etc.). Set
 
 ### GUI
 
-A display window opens automatically on boot showing:
+A display window opens when `gui.scd` is loaded (the boot block in `multiwarp.scd` loads it by default — comment that line out to run headless). It shows:
 
 - **Snapshot buttons** — 8 recall buttons (cyan = filled, dim = empty) and 8 save buttons. Click a recall button to morph to that snapshot over `~wfadeTime` seconds.
 - **Voice strips** — one per voice, each showing:
