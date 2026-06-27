@@ -40,6 +40,17 @@ Speed and pitch are fully decoupled: speed stretches or compresses time without 
 
 Samples are organised into lettered sets (`samples/a/`, `samples/b/`, etc.). Set `~wset = "a"` before booting to select which set loads. Snapshots are stored per-set in `snapshots/a.scd` etc.
 
+### GUI
+
+A display window opens automatically on boot showing:
+
+- **Snapshot buttons** — 8 recall buttons (cyan = filled, dim = empty) and 8 save buttons. Click a recall button to morph to that snapshot over `~wfadeTime` seconds.
+- **Voice strips** — one per voice, each showing:
+  - Waveform with loop region highlighted
+  - Amp bar (reflects fader position, read-only)
+  - Four interactive knobs: **pos**, **len**, **spd**, **sem** — draggable, and track LCXL encoder position in real time
+- **Randomise button** — randomises all params except volume
+
 ### To use
 
 1. Set `~wset` to your chosen letter in `multiwarp.scd`
@@ -84,6 +95,7 @@ sc/
     multiwarp/
       multiwarp.scd   — boot and tweakables (open this)
       engine.scd      — instrument implementation
+      gui.scd         — display window, loaded automatically by engine.scd
     multigranular.scd — granular instrument
   samples/
     a/                — sample set a (1.wav … 8.wav)

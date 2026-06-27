@@ -16,7 +16,7 @@
 // =============================================================================
 // TWEAKABLES — safe to evaluate individually at any time
 // =============================================================================
-~wfadeTime = 0.0;    // snapshot transition time in seconds (0 = instant)
+~wfadeTime = 1.0;    // snapshot transition time in seconds (0 = instant)
 ~wfadeTime = 2.0;
 ~wfadeTime = 5.0;
 ~wfadeTime = 10.0;
