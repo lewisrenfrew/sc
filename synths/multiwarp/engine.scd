@@ -46,7 +46,7 @@ s.waitForBoot({
     ~wbufs = Array.newClear(8);
     8.do({|i|
         ~wbufs[i] = Buffer.readChannel(s,
-            (thisProcess.nowExecutingPath.dirname +/+ "../../samples/%.wav".format(i + 1)),
+            (thisProcess.nowExecutingPath.dirname +/+ "../../samples/%/%.wav".format(~wset, i + 1)),
             channels: [0]);
     });
     s.sync;

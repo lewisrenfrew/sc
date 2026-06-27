@@ -1,6 +1,13 @@
 // Multi-warp looper — 8 voices, moment archaeology instrument.
+//
 // =============================================================================
-// BOOT — evaluate once. Wait for "Ready." in Post Window.
+// SET — choose a letter before booting. Determines which samples and snapshots
+// are loaded. Place samples in sc/samples/a/1.wav … 8.wav etc.
+// =============================================================================
+~wset = "a";
+
+// =============================================================================
+// BOOT — evaluate once after setting ~wset. Wait for "Ready." in Post Window.
 // =============================================================================
 // NOTE: update this path to match your environment.
 "C:/Users/Lewis Renfrew/Projects/personal/sc/synths/multiwarp/engine.scd".load;
@@ -25,8 +32,8 @@
 // SNAPSHOT PERSISTENCE
 // =============================================================================
 // SAVE: run after making snapshots you want to keep.
-~wsnapshots.writeArchive(thisProcess.nowExecutingPath.dirname +/+ "../../wsnapshots.scd");
+~wsnapshots.writeArchive(thisProcess.nowExecutingPath.dirname +/+ "../../snapshots/%" .format(~wset) ++ ".scd");
 
 // LOAD: run after boot to restore a saved session.
 // WARNING: do not run before saving in-memory snapshots — it will overwrite them.
-~wsnapshots = Object.readArchive(thisProcess.nowExecutingPath.dirname +/+ "../../wsnapshots.scd");
+~wsnapshots = Object.readArchive(thisProcess.nowExecutingPath.dirname +/+ "../../snapshots/%".format(~wset) ++ ".scd");
