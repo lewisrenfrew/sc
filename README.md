@@ -49,6 +49,7 @@ A display window opens automatically on boot showing:
   - Waveform with loop region highlighted
   - Amp bar (reflects fader position, read-only)
   - Four interactive knobs: **pos**, **len**, **spd**, **sem** — draggable, and track LCXL encoder position in real time
+  - Amp bar is read-only (reflects the fader position — volume is LCXL-only since faders aren't endless encoders and can't be synced with a software control)
 - **Randomise button** — randomises all params except volume
 
 ### To use
@@ -95,7 +96,7 @@ sc/
     multiwarp/
       multiwarp.scd   — boot and tweakables (open this)
       engine.scd      — instrument implementation
-      gui.scd         — display window, loaded automatically by engine.scd
+      gui.scd         — display window, loaded alongside engine.scd
     multigranular.scd — granular instrument
   samples/
     a/                — sample set a (1.wav … 8.wav)
@@ -111,3 +112,4 @@ sc/
 - Samples are not committed — add your own
 - Snapshot files are not committed — generated locally by the instruments
 - The LCXL top row buttons should be set to **momentary** in Novation Components for multiwarp (shift behaviour). Bottom row buttons should be momentary on both instruments.
+- A connected Launch Control XL is required — boot will fail without one, as `MIDIOut(2)` errors if the device isn't present. Volume is also LCXL-only (no GUI control).
