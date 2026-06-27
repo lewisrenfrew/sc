@@ -1,17 +1,14 @@
 // Multi-warp looper — 8 voices, moment archaeology instrument.
 //
 // =============================================================================
-// SET — choose a letter before booting. Determines which samples and snapshots
-// are loaded. Place samples in sc/samples/a/1.wav … 8.wav etc.
-// =============================================================================
-~wset = "a";
-
-// =============================================================================
-// BOOT — evaluate once after setting ~wset. Wait for "Ready." in Post Window.
-// =============================================================================
+// BOOT — set ~wset then evaluate this block. Wait for "Ready." in Post Window.
 // NOTE: update these paths to match your environment.
+// =============================================================================
+(
+~wset = "a";  // choose a letter — determines which samples and snapshots load
 "C:/Users/Lewis Renfrew/Projects/personal/sc/synths/multiwarp/engine.scd".load;
 "C:/Users/Lewis Renfrew/Projects/personal/sc/synths/multiwarp/gui.scd".load;
+)
 
 // =============================================================================
 // TWEAKABLES — safe to evaluate individually at any time

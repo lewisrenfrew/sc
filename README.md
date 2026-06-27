@@ -42,7 +42,7 @@ Samples are organised into lettered sets (`samples/a/`, `samples/b/`, etc.). Set
 
 ### GUI
 
-A display window opens when `gui.scd` is loaded (the boot block in `multiwarp.scd` loads it by default — comment that line out to run headless). It shows:
+A display window opens automatically on boot. Comment out the `gui.scd` line in the boot block to run headless. It shows:
 
 - **Snapshot buttons** — 8 recall buttons (cyan = filled, dim = empty) and 8 save buttons. Click a recall button to morph to that snapshot over `~wfadeTime` seconds.
 - **Voice strips** — one per voice, each showing:
@@ -54,10 +54,10 @@ A display window opens when `gui.scd` is loaded (the boot block in `multiwarp.sc
 
 ### To use
 
-1. Set `~wset` to your chosen letter in `multiwarp.scd`
+1. Set `~wset` to your chosen letter inside the boot block in `multiwarp.scd`
 2. Evaluate the boot block — wait for "Ready." in the Post Window
 3. Raise faders to bring voices in
-4. Use the tweakables below the boot block to set fade time, randomise params, etc.
+4. Use the tweakable lines below to set fade time, randomise params, etc.
 
 ---
 
