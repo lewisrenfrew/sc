@@ -29,13 +29,4 @@
 // =============================================================================
 ~wsynths.do({|s| s.free });
 
-// =============================================================================
-// SNAPSHOT PERSISTENCE
-// =============================================================================
-// NOTE: update this path to match your environment.
-// SAVE: run after making snapshots you want to keep.
-~wsnapshots.writeArchive("C:/Users/Lewis Renfrew/Projects/personal/sc/snapshots/" ++ ~wset ++ ".scd");
-
-// LOAD: run after boot to restore a saved session.
-// WARNING: do not run before saving in-memory snapshots — it will overwrite them.
-~wsnapshots = Object.readArchive("C:/Users/Lewis Renfrew/Projects/personal/sc/snapshots/" ++ ~wset ++ ".scd");
+~wwaveforms[0].notNil;

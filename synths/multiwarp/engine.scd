@@ -54,6 +54,15 @@ s.waitForBoot({
     });
     s.sync;
 
+    // --- Waveform data (downsampled for GUI display) ---
+    ~wwaveforms = Array.newClear(8);
+    8.do({|i|
+        ~wbufs[i].loadToFloatArray(action: {|arr|
+            var n = 512, step = arr.size / n;
+            ~wwaveforms[i] = Array.fill(n, {|j| arr[(j * step).asInteger] });
+        });
+    });
+
     // --- SynthDef ---
     SynthDef(\warpvoice, {
         arg buf = 0,
