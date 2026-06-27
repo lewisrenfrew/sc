@@ -50,7 +50,7 @@ A display window opens automatically on boot showing:
   - Amp bar (reflects fader position, read-only)
   - Four interactive knobs: **pos**, **len**, **spd**, **sem** — draggable, and track LCXL encoder position in real time
   - Amp bar is read-only (reflects the fader position — volume is LCXL-only since faders aren't endless encoders and can't be synced with a software control)
-- **Randomise button** — randomises all params except volume
+- **Randomise button** — randomises all params except volume (GUI only, no hardware equivalent)
 
 ### To use
 
