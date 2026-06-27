@@ -1,0 +1,32 @@
+// Multi-warp looper — 8 voices, moment archaeology instrument.
+// =============================================================================
+// BOOT — evaluate once. Wait for "Ready." in Post Window.
+// =============================================================================
+// NOTE: update this path to match your environment.
+"C:/Users/Lewis Renfrew/Projects/personal/sc/synths/multiwarp/engine.scd".load;
+
+// =============================================================================
+// TWEAKABLES — safe to evaluate individually at any time
+// =============================================================================
+~wfadeTime = 0.0;    // snapshot transition time in seconds (0 = instant)
+~wfadeTime = 2.0;
+~wfadeTime = 5.0;
+~wfadeTime = 10.0;
+
+// Randomise all params except vol — good for finding snapshot states quickly.
+8.do({|i| ~wloopStart[i] = rrand(0.0, 1.0); ~wloopLen[i] = exprand(0.001, 0.25); ~wspeed[i] = rrand(0.1, 3.0); ~wsemitones[i] = rrand(-24.0, 24.0); ~wsynths[i].set(\loopStart, ~wloopStart[i], \loopLen, ~wloopLen[i], \speed, ~wspeed[i], \semitones, ~wsemitones[i]); ~mout.control(0, 13 + i, ~wloopStart[i].linlin(0.0, 1.0, 0, 127).round.asInteger); ~mout.control(0, 21 + i, ~wloopLen[i].explin(0.001, 0.25, 0, 127).round.asInteger); ~mout.control(0, 29 + i, ~wspeed[i].linlin(0.1, 3.0, 0, 127).round.asInteger); });
+
+// =============================================================================
+// STOP — evaluate to free all voices
+// =============================================================================
+~wsynths.do({|s| s.free });
+
+// =============================================================================
+// SNAPSHOT PERSISTENCE
+// =============================================================================
+// SAVE: run after making snapshots you want to keep.
+~wsnapshots.writeArchive(thisProcess.nowExecutingPath.dirname +/+ "../../wsnapshots.scd");
+
+// LOAD: run after boot to restore a saved session.
+// WARNING: do not run before saving in-memory snapshots — it will overwrite them.
+~wsnapshots = Object.readArchive(thisProcess.nowExecutingPath.dirname +/+ "../../wsnapshots.scd");
