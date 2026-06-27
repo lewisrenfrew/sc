@@ -9,8 +9,9 @@
 // =============================================================================
 // BOOT — evaluate once after setting ~wset. Wait for "Ready." in Post Window.
 // =============================================================================
-// NOTE: update this path to match your environment.
+// NOTE: update these paths to match your environment.
 "C:/Users/Lewis Renfrew/Projects/personal/sc/synths/multiwarp/engine.scd".load;
+"C:/Users/Lewis Renfrew/Projects/personal/sc/synths/multiwarp/gui.scd".load;
 
 // =============================================================================
 // TWEAKABLES — safe to evaluate individually at any time
