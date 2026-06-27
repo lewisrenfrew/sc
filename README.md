@@ -111,5 +111,5 @@ sc/
 
 - Samples are not committed — add your own
 - Snapshot files are not committed — generated locally by the instruments
-- The LCXL top row buttons should be set to **momentary** in Novation Components for multiwarp (shift behaviour). Bottom row buttons should be momentary on both instruments.
+- The LCXL template for multiwarp is at `synths/multiwarp/lcxl/multiwarp.syx` — load it via Novation Components to configure the correct button modes and CC mapping.
 - A connected Launch Control XL is required — boot will fail without one, as `MIDIOut(2)` errors if the device isn't present. Volume is also LCXL-only (no GUI control).
