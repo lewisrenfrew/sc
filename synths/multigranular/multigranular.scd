@@ -18,10 +18,11 @@
 ~gfadeTime = 5.0;
 ~gfadeTime = 10.0;
 
-// Randomise all params except vol and mute.
-8.do({|i| ~gpos[i] = rrand(0.0, 1.0); ~gsize[i] = exprand(0.01, 0.5); ~gdensity[i] = exprand(2.0, 50.0); ~gsemitones[i] = rrand(-12.0, 12.0); ~gsynths[i].set(\pos, ~gpos[i], \size, ~gsize[i], \density, ~gdensity[i], \semitones, ~gsemitones[i]); ~mout.control(0, 13 + i, ~gpos[i].linlin(0.0, 1.0, 0, 127).round.asInteger); ~mout.control(0, 21 + i, ~gsize[i].explin(0.01, 1.0, 0, 127).round.asInteger); ~mout.control(0, 29 + i, ~gdensity[i].explin(1.0, 60.0, 0, 127).round.asInteger); });
+// Randomise all params except vol.
+8.do({|i| ~gpos[i] = rrand(0.0, 1.0); ~gsize[i] = exprand(0.01, 0.5); ~gdensity[i] = exprand(2.0, 50.0); ~gsemitones[i] = rrand(-12.0, 12.0); ~gpan[i] = rrand(-0.8, 0.8); ~gspray[i] = exprand(0.005, 0.25); ~gsynths[i].set(\pos, ~gpos[i], \size, ~gsize[i], \density, ~gdensity[i], \semitones, ~gsemitones[i], \pan, ~gpan[i], \scatter, ~gspray[i]); ~mout.control(0, 13 + i, ~gpos[i].linlin(0.0, 1.0, 0, 127).round.asInteger); ~mout.control(0, 21 + i, ~gsize[i].explin(0.01, 1.0, 0, 127).round.asInteger); ~mout.control(0, 29 + i, ~gdensity[i].explin(1.0, 60.0, 0, 127).round.asInteger); });
 
 // =============================================================================
 // STOP — evaluate to free all voices
 // =============================================================================
 ~gsynths.do({|s| s.free });
+// 

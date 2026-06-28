@@ -5,22 +5,23 @@
 // =============================================================================
 //
 // FADER:         vol (0.0 to 1.5) — pull to zero to mute
-//                while shift held: fader controls semitones (-24 to +24)
+//                [shift] semitones (-24 to +24)
 //
-// ENCODER 1:     pos     — playhead position in buffer (0.0 to 1.0)
-// ENCODER 2:     size    — grain duration (0.01s to 1.0s, exp)
-// ENCODER 3:     density — grains per second (1 to 60, exp)
+// ENCODER 1:     pos     — playhead position in buffer (0-1)   [normal]
+//                pan     — stereo position (-1 to +1)          [shift]
+// ENCODER 2:     size    — grain duration (0.01s to 1.0s, exp) [normal]
+//                spray   — per-grain position jitter (0-0.5)   [shift]
+// ENCODER 3:     density — grains per second (1-60, exp)       [normal]
+//                semitones — pitch shift (-24 to +24 st)       [shift]
 //
 // TOP BUTTON:    shift hold (momentary — configure in LCXL Editor)
-//                while held: fader controls semitones (-24 to +24)
-//                released:   fader controls vol (default)
+//                on press:   LEDs flip to show pan / spray / size
+//                on release: LEDs flip to show pos / size / density
 //
 // BOTTOM BUTTON: snapshot (momentary — configure in LCXL Editor)
 //                short press (<1.5s) = recall snapshot
-//                long press  (1.5s+) = save current state to that slot
-//                snapshots store: vol, pos, size, density, semitones per voice
-//
-// Scatter is GUI-only.
+//                long press  (1.5s+) = save current state
+//                snapshots store: vol, pos, size, density, semitones, pan, spray per voice
 //
 // LCXL CC MAP (all MIDI ch 0, voice index i = 0..7):
 //   Fader:         CC  5 + i   (5..12)
@@ -72,6 +73,7 @@ s.waitForBoot({
             density = 20.0,
             semitones = 0.0,
             scatter = 0.02,
+            pan = 0.0,
             vol_lag       = 0.05,
             semitones_lag = 0.0;
         var sig, trigger, bufPos, bufDur, vol_s, rate;
@@ -82,12 +84,11 @@ s.waitForBoot({
 
         trigger = Impulse.ar(Lag.kr(density, 0.05));
 
-        // Scatter: per-grain random position jitter, sampled fresh each trigger.
         bufPos = (Lag.kr(pos, 0.005) * bufDur)
                + Latch.ar(WhiteNoise.ar * scatter * bufDur, trigger);
         bufPos = bufPos.clip(0, bufDur);
 
-        sig = TGrains.ar(2, trigger, buf, rate, bufPos, Lag.kr(size, 0.005), 0, 1, 2);
+        sig = TGrains.ar(2, trigger, buf, rate, bufPos, Lag.kr(size, 0.005), Lag.kr(pan, 0.05), 1, 2);
 
         Out.ar(out, sig * vol_s.clip(0, 1.5));
     }).add;
@@ -106,7 +107,8 @@ s.waitForBoot({
     ~gsize      = Array.fill(8, 0.1);
     ~gdensity   = Array.fill(8, 20.0);
     ~gsemitones = Array.fill(8, 0.0);
-    ~gscatter   = 0.02;
+    ~gpan       = Array.fill(8, 0.0);
+    ~gspray     = Array.fill(8, 0.02);
     ~gshift     = Array.fill(8, false);
     ~gsynths    = Array.newClear(8);
     ~gsnapshots = Array.fill(8, nil);
@@ -114,7 +116,7 @@ s.waitForBoot({
     ~gfadeTime  = 0.0;
 
     8.do({|i|
-        // Fader — vol (normal) or semitones (while shift held)
+        // Fader — vol [normal] / semitones [shift]
         MIDIdef.cc(("g_fader_" ++ i).asSymbol, {|val|
             if(~gshift[i]) {
                 ~gsemitones[i] = val.linlin(0, 127, -24, 24);
@@ -125,29 +127,53 @@ s.waitForBoot({
             };
         }, 5 + i, 0);
 
-        // Top button — shift (momentary)
+        // Top button — shift (momentary); LEDs flip between normal and shift param values
         MIDIdef.cc(("g_shift_" ++ i).asSymbol, {|val|
             ~gshift[i] = (val == 127);
+            if(~gshift[i]) {
+                ~mout.control(0, 13 + i, ~gpan[i].linlin(-1.0, 1.0, 0, 127).round.asInteger);
+                ~mout.control(0, 21 + i, ~gspray[i].explin(0.001, 0.5, 0, 127).round.asInteger);
+                ~mout.control(0, 29 + i, ~gsemitones[i].linlin(-24.0, 24.0, 0, 127).round.asInteger);
+            } {
+                ~mout.control(0, 13 + i, ~gpos[i].linlin(0.0, 1.0, 0, 127).round.asInteger);
+                ~mout.control(0, 21 + i, ~gsize[i].explin(0.01, 1.0, 0, 127).round.asInteger);
+                ~mout.control(0, 29 + i, ~gdensity[i].explin(1.0, 60.0, 0, 127).round.asInteger);
+            };
         }, 37 + i, 0);
 
-        // Encoder 1 — pos (0.0 to 1.0)
-        MIDIdef.cc(("g_pos_" ++ i).asSymbol, {|val|
-            ~gpos[i] = val.linlin(0, 127, 0.0, 1.0);
-            ~gsynths[i].set(\pos, ~gpos[i]);
+        // Encoder 1 — pos [normal] / pan [shift]
+        MIDIdef.cc(("g_enc1_" ++ i).asSymbol, {|val|
+            if(~gshift[i]) {
+                ~gpan[i] = val.linlin(0, 127, -1.0, 1.0);
+                ~gsynths[i].set(\pan, ~gpan[i]);
+            } {
+                ~gpos[i] = val.linlin(0, 127, 0.0, 1.0);
+                ~gsynths[i].set(\pos, ~gpos[i]);
+            };
             ~mout.control(0, 13 + i, val);
         }, 13 + i, 0);
 
-        // Encoder 2 — size (exp 0.01s to 1.0s)
-        MIDIdef.cc(("g_size_" ++ i).asSymbol, {|val|
-            ~gsize[i] = val.linexp(0, 127, 0.01, 1.0);
-            ~gsynths[i].set(\size, ~gsize[i]);
+        // Encoder 2 — size [normal] / spray [shift]
+        MIDIdef.cc(("g_enc2_" ++ i).asSymbol, {|val|
+            if(~gshift[i]) {
+                ~gspray[i] = val.linexp(0, 127, 0.001, 0.5);
+                ~gsynths[i].set(\scatter, ~gspray[i]);
+            } {
+                ~gsize[i] = val.linexp(0, 127, 0.01, 1.0);
+                ~gsynths[i].set(\size, ~gsize[i]);
+            };
             ~mout.control(0, 21 + i, val);
         }, 21 + i, 0);
 
-        // Encoder 3 — density (exp 1 to 60 grains/sec)
-        MIDIdef.cc(("g_density_" ++ i).asSymbol, {|val|
-            ~gdensity[i] = val.linexp(0, 127, 1.0, 60.0);
-            ~gsynths[i].set(\density, ~gdensity[i]);
+        // Encoder 3 — density [normal] / semitones [shift]
+        MIDIdef.cc(("g_enc3_" ++ i).asSymbol, {|val|
+            if(~gshift[i]) {
+                ~gsemitones[i] = val.linlin(0, 127, -24.0, 24.0);
+                ~gsynths[i].set(\semitones, ~gsemitones[i]);
+            } {
+                ~gdensity[i] = val.linexp(0, 127, 1.0, 60.0);
+                ~gsynths[i].set(\density, ~gdensity[i]);
+            };
             ~mout.control(0, 29 + i, val);
         }, 29 + i, 0);
     });
@@ -163,7 +189,7 @@ s.waitForBoot({
                     ~gpressTime[i] = nil;
                     if(elapsed >= 1.5) {
                         ~gsnapshots[i] = Array.fill(8, {|v|
-                            [~gvols[v], ~gpos[v], ~gsize[v], ~gdensity[v], ~gsemitones[v]]
+                            [~gvols[v], ~gpos[v], ~gsize[v], ~gdensity[v], ~gsemitones[v], ~gpan[v], ~gspray[v]]
                         });
                         ~gsnapshots.writeArchive(~gsnapshotPath);
                         ("Snapshot % saved and persisted.".format(i + 1)).postln;
@@ -177,6 +203,8 @@ s.waitForBoot({
                                 ~gsize[v]      = state[2];
                                 ~gdensity[v]   = state[3];
                                 ~gsemitones[v] = state[4];
+                                ~gpan[v]       = state[5] ? 0.0;
+                                ~gspray[v]     = state[6] ? 0.02;
                                 ~gsynths[v].set(
                                     \vol,           ~gvols[v],
                                     \vol_lag,       fade,
@@ -184,7 +212,9 @@ s.waitForBoot({
                                     \size,          ~gsize[v],
                                     \density,       ~gdensity[v],
                                     \semitones,     ~gsemitones[v],
-                                    \semitones_lag, fade
+                                    \semitones_lag, fade,
+                                    \pan,           ~gpan[v],
+                                    \scatter,       ~gspray[v]
                                 );
                                 ~mout.control(0, 13 + v, ~gpos[v].linlin(0.0, 1.0, 0, 127).round.asInteger);
                                 ~mout.control(0, 21 + v, ~gsize[v].explin(0.01, 1.0, 0, 127).round.asInteger);
@@ -219,11 +249,12 @@ s.waitForBoot({
             \size,      ~gsize[i],
             \density,   ~gdensity[i],
             \semitones, 0.0,
-            \scatter,   ~gscatter
+            \scatter,   ~gspray[i],
+            \pan,       ~gpan[i]
         ]);
     });
 
-    // Reset LED rings.
+    // Reset LED rings (boot with shift off — show pos / size / density).
     8.do({|i|
         ~mout.control(0, 13 + i, ~gpos[i].linlin(0.0, 1.0, 0, 127).round.asInteger);
         ~mout.control(0, 21 + i, ~gsize[i].explin(0.01, 1.0, 0, 127).round.asInteger);
