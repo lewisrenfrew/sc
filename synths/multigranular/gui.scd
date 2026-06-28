@@ -158,9 +158,9 @@ var padding      = 24,
         .font_(Font("Monaco", 18))
         .background_(Color.clear);
 
-    strip.muteLabel = StaticText(~ggui.win, Rect(x + 30, y + 8, 60, 16))
-        .string_("MUTE")
-        .stringColor_(Color.red(0.9))
+    strip.shiftLabel = StaticText(~ggui.win, Rect(x + 30, y + 8, 60, 16))
+        .string_("PITCH")
+        .stringColor_(Color.yellow)
         .font_(Font("Monaco", 11))
         .background_(Color.clear)
         .visible_(false);
@@ -207,10 +207,10 @@ var padding      = 24,
     // Amp bar
     strip.vol = UserView(~ggui.win, Rect(x + 4, belowY, voiceWidth - 8, 10))
         .drawFunc_({|v|
-            var val = if(~gmute[i]) { 0 } { (~gvols[i] / 1.5).clip(0, 1) };
+            var val = (~gvols[i] / 1.5).clip(0, 1);
             Pen.fillColor_(Color.gray(0.15));
             Pen.fillRect(v.bounds.moveTo(0, 0));
-            Pen.fillColor_(if(~gmute[i]) { Color.red(0.5) } { Color.green(0.7) });
+            Pen.fillColor_(Color.green(0.7));
             Pen.fillRect(Rect(0, 0, v.bounds.width * val, v.bounds.height));
         });
 
@@ -285,7 +285,7 @@ var padding      = 24,
     size:      Array.fill(8, -1),
     density:   Array.fill(8, -1),
     semitones: Array.fill(8, -999),
-    mute:      Array.fill(8, false),
+    shift:     Array.fill(8, false),
     snapshots: Array.fill(8, false),
     scatter:   -1,
     fadeTime:  -1
@@ -302,17 +302,17 @@ var padding      = 24,
                     sz   = ~gsize[i].round(0.001),
                     den  = ~gdensity[i].round(0.1),
                     sem  = ~gsemitones[i].round(0.1),
-                    mute = ~gmute[i];
+                    shift = ~gshift[i];
 
                 strip.wave.refresh;
                 strip.vol.refresh;
 
-                if(vol  != ~ggui.cache.vols[i])     { strip.volLabel.string_("amp " ++ vol);                                                              ~ggui.cache.vols[i] = vol };
-                if(pos  != ~ggui.cache.pos[i])       { strip.posKnob.value_(pos); strip.posVal.string_(pos.asString);                                      ~ggui.cache.pos[i] = pos };
-                if(sz   != ~ggui.cache.size[i])      { strip.sizeKnob.value_(sz.explin(0.01, 1.0, 0.0, 1.0)); strip.sizeVal.string_(sz.asString);         ~ggui.cache.size[i] = sz };
-                if(den  != ~ggui.cache.density[i])   { strip.denKnob.value_(den.explin(1.0, 60.0, 0.0, 1.0)); strip.denVal.string_(den.asString);         ~ggui.cache.density[i] = den };
-                if(sem  != ~ggui.cache.semitones[i]) { strip.semKnob.value_(sem.linlin(-24.0, 24.0, 0.0, 1.0)); strip.semVal.string_(sem.asString);       ~ggui.cache.semitones[i] = sem };
-                if(mute != ~ggui.cache.mute[i])      { strip.muteLabel.visible_(mute); strip.bg.background_(if(mute) { Color.gray(0.07) } { Color.gray(0.1) }); ~ggui.cache.mute[i] = mute };
+                if(vol   != ~ggui.cache.vols[i])     { strip.volLabel.string_("amp " ++ vol);                                                        ~ggui.cache.vols[i] = vol };
+                if(pos   != ~ggui.cache.pos[i])       { strip.posKnob.value_(pos); strip.posVal.string_(pos.asString);                                ~ggui.cache.pos[i] = pos };
+                if(sz    != ~ggui.cache.size[i])      { strip.sizeKnob.value_(sz.explin(0.01, 1.0, 0.0, 1.0)); strip.sizeVal.string_(sz.asString);   ~ggui.cache.size[i] = sz };
+                if(den   != ~ggui.cache.density[i])   { strip.denKnob.value_(den.explin(1.0, 60.0, 0.0, 1.0)); strip.denVal.string_(den.asString);   ~ggui.cache.density[i] = den };
+                if(sem   != ~ggui.cache.semitones[i]) { strip.semKnob.value_(sem.linlin(-24.0, 24.0, 0.0, 1.0)); strip.semVal.string_(sem.asString); ~ggui.cache.semitones[i] = sem };
+                if(shift != ~ggui.cache.shift[i])     { strip.shiftLabel.visible_(shift);                                                             ~ggui.cache.shift[i] = shift };
             });
 
             if(sc != ~ggui.cache.scatter) {

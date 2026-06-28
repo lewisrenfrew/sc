@@ -5,27 +5,29 @@
 // =============================================================================
 //
 // FADER:         vol (0.0 to 1.5) — pull to zero to mute
+//                while shift held: fader controls semitones (-24 to +24)
 //
 // ENCODER 1:     pos     — playhead position in buffer (0.0 to 1.0)
 // ENCODER 2:     size    — grain duration (0.01s to 1.0s, exp)
 // ENCODER 3:     density — grains per second (1 to 60, exp)
 //
-// TOP BUTTON:    mute toggle (CONFIGURE AS TOGGLE in LCXL Editor, not momentary)
-//                LED on = muted, LED off = playing
+// TOP BUTTON:    shift hold (momentary — configure in LCXL Editor)
+//                while held: fader controls semitones (-24 to +24)
+//                released:   fader controls vol (default)
 //
 // BOTTOM BUTTON: snapshot (momentary — configure in LCXL Editor)
 //                short press (<1.5s) = recall snapshot
 //                long press  (1.5s+) = save current state to that slot
 //                snapshots store: vol, pos, size, density, semitones per voice
 //
-// Semitones and scatter are GUI-only — no LCXL encoders for these.
+// Scatter is GUI-only.
 //
 // LCXL CC MAP (all MIDI ch 0, voice index i = 0..7):
 //   Fader:         CC  5 + i   (5..12)
 //   Encoder 1:     CC 13 + i   (13..20)
 //   Encoder 2:     CC 21 + i   (21..28)
 //   Encoder 3:     CC 29 + i   (29..36)
-//   Top button:    CC 37 + i   (37..44)  — mute toggle
+//   Top button:    CC 37 + i   (37..44)  — shift (momentary)
 //   Bottom button: CC 45 + i   (45..52)  — snapshot (momentary)
 //
 // SAMPLES: shared with multiwarp — place 1.wav through 8.wav in sc/samples/[set]/
@@ -105,25 +107,27 @@ s.waitForBoot({
     ~gdensity   = Array.fill(8, 20.0);
     ~gsemitones = Array.fill(8, 0.0);
     ~gscatter   = 0.02;
-    ~gmute      = Array.fill(8, false);
+    ~gshift     = Array.fill(8, false);
     ~gsynths    = Array.newClear(8);
     ~gsnapshots = Array.fill(8, nil);
     ~gpressTime = Array.fill(8, nil);
     ~gfadeTime  = 0.0;
 
     8.do({|i|
-        // Fader — vol
+        // Fader — vol (normal) or semitones (while shift held)
         MIDIdef.cc(("g_fader_" ++ i).asSymbol, {|val|
-            ~gvols[i] = val.linlin(0, 127, 0.0, 1.5);
-            if(~gmute[i].not) {
+            if(~gshift[i]) {
+                ~gsemitones[i] = val.linlin(0, 127, -24, 24);
+                ~gsynths[i].set(\semitones, ~gsemitones[i]);
+            } {
+                ~gvols[i] = val.linlin(0, 127, 0.0, 1.5);
                 ~gsynths[i].set(\vol, ~gvols[i]);
             };
         }, 5 + i, 0);
 
-        // Top button — mute toggle (template must configure as toggle, not momentary)
-        MIDIdef.cc(("g_mute_" ++ i).asSymbol, {|val|
-            ~gmute[i] = (val == 127);
-            ~gsynths[i].set(\vol, if(~gmute[i]) { 0.0 } { ~gvols[i] });
+        // Top button — shift (momentary)
+        MIDIdef.cc(("g_shift_" ++ i).asSymbol, {|val|
+            ~gshift[i] = (val == 127);
         }, 37 + i, 0);
 
         // Encoder 1 — pos (0.0 to 1.0)
@@ -174,7 +178,7 @@ s.waitForBoot({
                                 ~gdensity[v]   = state[3];
                                 ~gsemitones[v] = state[4];
                                 ~gsynths[v].set(
-                                    \vol,           if(~gmute[v]) { 0.0 } { ~gvols[v] },
+                                    \vol,           ~gvols[v],
                                     \vol_lag,       fade,
                                     \pos,           ~gpos[v],
                                     \size,          ~gsize[v],
