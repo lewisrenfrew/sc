@@ -113,7 +113,7 @@ Shares the same `samples/[set]/` directory as multiwarp — no duplicate files n
 
 ### LCXL template
 
-Load `synths/multigranular/lcxl/multigranular.syx` via Novation Components. Both buttons must be configured as **momentary** (identical to the multiwarp template).
+Load `synths/multigranular/lcxl/multigranular.syx` via Novation Components. Both buttons must be configured as **momentary** (identical to the multiwarp template except from param names).
 
 ---
 
