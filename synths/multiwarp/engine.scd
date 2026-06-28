@@ -72,6 +72,7 @@ s.waitForBoot({
             loopLen   = 1.0,
             speed     = 1.0,
             semitones = 0.0,
+            voiceIdx  = 0,
             vol_lag       = 0.05,
             loopStart_lag = 0.0,
             loopLen_lag   = 0.0,
@@ -105,6 +106,9 @@ s.waitForBoot({
             0, 0.001);
 
         Out.ar(out, (sig ! 2) * vol_s.clip(0, 1.5));
+
+        // Broadcast normalised playhead position to language at 20fps for GUI display.
+        SendReply.ar(Impulse.ar(20), '/warp_pos', [voiceIdx, A2K.kr(ptr) / BufFrames.kr(buf)]);
     }).add;
 
     s.sync;
@@ -114,6 +118,12 @@ s.waitForBoot({
 
     // --- MIDI responders ---
     MIDIdef.freeAll;
+
+    // Playhead positions received from server via SendReply.
+    ~wplayhead = Array.fill(8, 0.0);
+    OSCdef(\warp_pos, {|msg|
+        ~wplayhead[msg[3].asInteger] = msg[4];
+    }, '/warp_pos');
 
     // Language-side param mirrors — kept in sync by CC responders.
     ~wvols      = Array.fill(8, 0.0);
@@ -239,7 +249,8 @@ s.waitForBoot({
             \loopStart, 0.0,
             \loopLen,   1.0,
             \speed,     1.0,
-            \semitones, 0.0
+            \semitones, 0.0,
+            \voiceIdx,  i
         ]);
     });
 

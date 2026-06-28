@@ -140,7 +140,7 @@ var padding      = 24,
         .drawFunc_({|v|
             var w = v.bounds.width, h = v.bounds.height, mid = h / 2,
                 data = ~wwaveforms[i],
-                startX, lenX;
+                startX, lenX, phX;
 
             // Background
             Pen.fillColor_(Color.gray(0.06));
@@ -165,6 +165,13 @@ var padding      = 24,
                 Pen.strokeColor_(Color.cyan(0.9, 0.7));
                 Pen.width_(1.5);
                 Pen.strokeRect(Rect(startX, 0, lenX, h));
+
+                // Playhead
+                phX = (~wplayhead[i] ? 0.0) * w;
+                Pen.strokeColor_(Color.white(0.9, 0.85));
+                Pen.width_(1.5);
+                Pen.line(phX @ 0, phX @ h);
+                Pen.stroke;
             } {
                 Pen.stringCenteredIn("loading...",
                     Rect(0, mid - 10, w, 20),

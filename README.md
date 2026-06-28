@@ -70,35 +70,36 @@ Load `synths/multiwarp/lcxl/multiwarp.syx` via Novation Components. Top buttons 
 
 **`synths/multigranular/multigranular.scd`**
 
-8-voice granular synthesizer. Each voice plays a different sample using granular synthesis with independent position, grain size, density and pitch control. Shares sample banks with multiwarp.
+8-voice granular synthesizer. Each voice plays a different sample using granular synthesis with independent control of position, grain size, density, pitch, pan and spray. Shares sample banks with multiwarp.
 
 ### Controls (Launch Control XL)
 
-| Control | Function |
-|---|---|
-| Fader | Volume (0 to 1.5) |
-| Top button (hold) | Shift — fader controls semitones (-24 to +24) while held |
-| Encoder 1 | Playhead position in buffer (0.0 to 1.0) |
-| Encoder 2 | Grain size (0.01s to 1.0s, exponential) |
-| Encoder 3 | Grain density (1 to 60 grains/sec, exponential) |
-| Bottom button (short press) | Recall snapshot |
-| Bottom button (long press 1.5s+) | Save snapshot |
+Encoders have a shift layer activated by holding the top button — same button that gives semitones on the fader.
+
+| Control | Normal | Shift held |
+|---|---|---|
+| Fader | Volume (0 to 1.5) | Semitones (−24 to +24) |
+| Encoder 1 | Playhead position (0–1) | Pan (−1 to +1) |
+| Encoder 2 | Grain size (0.01–1.0s, exp) | Spray — position jitter (0–0.5, exp) |
+| Encoder 3 | Grain density (1–60 grains/sec, exp) | Semitones (−24 to +24) |
+| Top button (hold) | — | Shift modifier |
+| Bottom button (short press) | Recall snapshot | — |
+| Bottom button (long press 1.5s+) | Save snapshot | — |
+
+LED rings update when shift is pressed/released to show the active parameter's current value.
 
 ### Snapshot system
 
-Same as multiwarp: 8 slots, auto-save on save, auto-load on boot. Each snapshot stores volume, position, grain size, density and semitones per voice. Fade time is controlled by `~gfadeTime`.
+Same as multiwarp: 8 slots, auto-save on save, auto-load on boot. Each snapshot stores volume, position, grain size, density, semitones, pan and spray per voice. Fade time is controlled by `~gfadeTime`.
 
 ### GUI
 
 - **Snapshot buttons** — same as multiwarp (cyan = filled, dim = empty)
 - **Voice strips** — one per voice, each showing:
-  - Waveform with a position marker (vertical line) and scatter zone (shaded region showing the randomisation range)
+  - Waveform with position marker, scatter zone, and grain flash (pulses at the grain rate)
   - Amp bar
-  - Four interactive knobs: **pos**, **size**, **den**, **sem**
-- **Scatter knob** (header) — global control for random position jitter applied per-grain. Affects the scatter zone visualisation on each voice's waveform.
+  - Six interactive knobs — **cyan** (normal encoders): **pos**, **size**, **den**; **yellow** (shift layer): **pan**, **spray**, **sem**
 - **Randomise button** — randomises all params except volume (GUI only)
-
-Semitones is also adjustable per-voice in the GUI (no direct LCXL encoder — use shift+fader or the GUI knob).
 
 ### To use
 

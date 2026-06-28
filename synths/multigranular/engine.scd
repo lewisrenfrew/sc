@@ -15,7 +15,7 @@
 //                semitones — pitch shift (-24 to +24 st)       [shift]
 //
 // TOP BUTTON:    shift hold (momentary — configure in LCXL Editor)
-//                on press:   LEDs flip to show pan / spray / size
+//                on press:   LEDs flip to show pan / spray / semitones
 //                on release: LEDs flip to show pos / size / density
 //
 // BOTTOM BUTTON: snapshot (momentary — configure in LCXL Editor)
