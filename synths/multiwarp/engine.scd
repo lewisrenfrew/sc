@@ -39,7 +39,7 @@ s.waitForBoot({
     Routine({
 
     // Capture snapshot path at load time while nowExecutingPath is valid.
-    ~wsnapshotPath = thisProcess.nowExecutingPath.dirname +/+ "../../snapshots/" ++ ~wset ++ ".scd";
+    ~wsnapshotPath = thisProcess.nowExecutingPath.dirname +/+ "snapshots/" ++ ~wset ++ ".scd";
 
     // --- MIDI ---
     MIDIClient.init;
