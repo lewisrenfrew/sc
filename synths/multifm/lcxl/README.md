@@ -1,6 +1,6 @@
 # multifm LCXL template
 
-Top buttons must be configured as **toggle**. Bottom buttons must be **momentary**.
+Load `synths/multifm/lcxl/multifm.syx` via Novation Components. Top buttons must be **toggle**. Bottom buttons must be **momentary**.
 
 ## CC mapping
 

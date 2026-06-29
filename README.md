@@ -211,7 +211,7 @@ With decouple off, the modulator tracks the carrier via the ratio — moving enc
 
 ### LCXL template
 
-Use any existing instrument template (same CC layout, both buttons momentary). Top button latching is handled in software.
+Load `synths/multifm/lcxl/multifm.syx` via Novation Components. Top buttons must be **toggle** (hardware LED reflects decouple state). Bottom buttons must be **momentary**.
 
 ---
 
@@ -254,7 +254,7 @@ sc/
       gui.scd           — display window
       snapshots/        — saved snapshots (generated, not committed)
       lcxl/
-        README.md       — CC mapping reference (use any existing .syx template)
+        multifm.syx     — LCXL template (top buttons toggle, bottom buttons momentary)
   samples/
     a/                  — sample set a (1.wav … 8.wav), shared by all instruments
     b/                  — sample set b

@@ -15,10 +15,10 @@
 // =============================================================================
 // TWEAKABLES — safe to evaluate individually at any time
 // =============================================================================
-~fmfadeTime = 0.0;
+~fmfadeTime = 0.3;
 ~fmfadeTime = 1.0;
 ~fmfadeTime = 2.0;
-~fmfadeTime = 5.0;
+~fmfadeTime = 30.0;
 
 // Randomise freq, ratio and index for all voices (not vol, not decouple state)
 8.do({|i| ~fmfreq[i] = rrand(0.0, 1.0); ~fmratio[i] = rrand(0.0, 1.0); ~fmidx[i] = rrand(0.0, 1.0); ~fmsynths[i].set(\freq, ~fmfreq[i], \ratio, ~fmratio[i], \modIndex, ~fmidx[i]); ~mout.control(0, 13 + i, ~fmfreq[i].linlin(0.0, 1.0, 0, 127).round.asInteger); ~mout.control(0, 21 + i, ~fmratio[i].linlin(0.0, 1.0, 0, 127).round.asInteger); ~mout.control(0, 29 + i, ~fmidx[i].linlin(0.0, 1.0, 0, 127).round.asInteger); });
