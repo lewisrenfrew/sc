@@ -5,3 +5,5 @@ samples/**/*.wav
 snapshots.scd
 wsnapshots.scd
 snapshots/*.scd
+
+plans/

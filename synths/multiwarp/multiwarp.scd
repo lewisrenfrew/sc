@@ -5,7 +5,7 @@
 // NOTE: update these paths to match your environment.
 // =============================================================================
 (
-~wset = "a";  // choose a letter — determines which samples and snapshots load
+~wset = "b";  // choose a letter — determines which samples and snapshots load
 "C:/Users/Lewis Renfrew/Projects/personal/sc/synths/multiwarp/engine.scd".load;
 "C:/Users/Lewis Renfrew/Projects/personal/sc/synths/multiwarp/gui.scd".load;
 )

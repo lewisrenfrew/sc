@@ -1,6 +1,6 @@
 # sc — SuperCollider instruments
 
-Three live performance instruments controlled by a Novation Launch Control XL, built in SuperCollider and edited in VS Code.
+Four live performance instruments controlled by a Novation Launch Control XL, built in SuperCollider and edited in VS Code.
 
 ## Setup
 
@@ -169,6 +169,52 @@ Load `synths/multifreeze/lcxl/multifreeze.syx` via Novation Components. Use the 
 
 ---
 
+## multifm
+
+**`synths/multifm/multifm.scd`**
+
+8-voice 2-operator FM drone instrument. All voices drone continuously from boot — bring them in with faders and shape their timbres with the encoders. Designed around snapshot morphing: FM parameters produce dramatic timbral shifts on small moves, so fading between snapshots creates sweeping spectral changes.
+
+### Controls (Launch Control XL)
+
+| Control | Function |
+|---|---|
+| Fader | Volume (0 to 1.5) |
+| Encoder 1 | Carrier frequency (30–600 Hz, exponential) |
+| Encoder 2 | Modulator:carrier ratio (0.25×–8.0×, exponential) |
+| Encoder 3 | Modulation index β (0.01–12.0, exponential) — timbre from pure sine to dense spectrum |
+| Top button (toggle) | Decouple — freezes modulator Hz at current value; LED on while active |
+| Bottom button (short press) | Recall snapshot |
+| Bottom button (long press 1.5s+) | Save snapshot |
+
+With decouple off, the modulator tracks the carrier via the ratio — moving enc1 shifts both together and the timbre stays constant. With decouple on, the modulator is fixed at the Hz it had when the button was pressed. Moving enc1 now changes the carrier-to-modulator ratio in real time, producing harmonic series sweeps and beating effects.
+
+### Snapshot system
+
+8 slots, auto-saved to disk on each save, auto-loaded on boot. Each snapshot stores volume, carrier frequency, modulator ratio, modulation index, decouple state and frozen modulator Hz per voice. All parameters interpolate smoothly over `~fmfadeTime` seconds. Fade time is configured with `~fmfadeTime`.
+
+### GUI
+
+- **Snapshot buttons** — 8 recall buttons (amber = filled, dim = empty) and 8 save buttons
+- **Voice strips** — one per voice, each showing:
+  - Amp bar
+  - Three amber knobs: **freq**, **ratio**, **index** — draggable, track LCXL encoders in real time
+  - **dcpl** indicator — lights amber when decouple mode is active
+- **Randomise button** — randomises freq, ratio and index for all voices (not volume, not decouple state)
+
+### To use
+
+1. Evaluate the boot block — wait for "Ready." in the Post Window
+2. Raise faders to bring voices in
+3. Use enc3 (index) to add FM complexity; enc2 (ratio) to set harmonic character
+4. Save a snapshot, then dial in a different texture and save another — use fade time to morph
+
+### LCXL template
+
+Use any existing instrument template (same CC layout, both buttons momentary). Top button latching is handled in software.
+
+---
+
 ## Notes
 
 - All instruments use `MIDIOut(2)` (LCXL port) — a connected Launch Control XL is required. Boot will fail without one.
@@ -202,6 +248,13 @@ sc/
       snapshots/        — saved snapshots per set (generated, not committed)
       lcxl/
         multifreeze.syx — LCXL template (identical config to multiwarp)
+    multifm/
+      multifm.scd       — boot and tweakables (open this)
+      engine.scd        — instrument implementation
+      gui.scd           — display window
+      snapshots/        — saved snapshots (generated, not committed)
+      lcxl/
+        README.md       — CC mapping reference (use any existing .syx template)
   samples/
     a/                  — sample set a (1.wav … 8.wav), shared by all instruments
     b/                  — sample set b
