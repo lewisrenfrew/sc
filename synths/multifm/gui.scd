@@ -16,7 +16,8 @@ var padding      = 24,
     knobGap      = 8,
     rowH         = knobSz + knobGap,
     fmKnob       = [Color.gray(0.15), Color.new(0.9, 0.65, 0.1), Color.gray(0.3), Color.gray(0.2)],
-    dcplColor    = Color.new(1.0, 0.6, 0.05);
+    dcplColor    = Color.new(1.0, 0.6, 0.05),
+    dcplOffColor = Color.gray(0.2);
 
 ~fmgui = ();
 
@@ -242,7 +243,7 @@ var padding      = 24,
                     ~fmgui.cache.idxAmt[i] = idx;
                 };
                 if(dcpl != ~fmgui.cache.dcplAmt[i]) {
-                    strip.dcplLabel.stringColor_(if(dcpl) { Color.new(1.0, 0.6, 0.05) } { Color.gray(0.2) });
+                    strip.dcplLabel.stringColor_(if(dcpl) { dcplColor } { dcplOffColor });
                     ~fmgui.cache.dcplAmt[i] = dcpl;
                 };
             });

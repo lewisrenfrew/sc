@@ -157,6 +157,6 @@ MIDIdef.freeAll;
     }, 45 + i, 0);
 });
 
-        "multifm: Ready.".postln;
+"multifm: Ready.".postln;
 };
 )

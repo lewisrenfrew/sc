@@ -5,7 +5,7 @@
 // NOTE: update these paths to match your environment.
 // =============================================================================
 (
-~gset = "a";  // choose a letter — determines which samples and snapshots load
+~gset = "b";  // choose a letter — determines which samples and snapshots load
 "C:/Users/Lewis Renfrew/Projects/personal/sc/synths/multigranular/engine.scd".load;
 "C:/Users/Lewis Renfrew/Projects/personal/sc/synths/multigranular/gui.scd".load;
 )
