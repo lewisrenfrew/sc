@@ -1,6 +1,6 @@
 # sc — SuperCollider instruments
 
-Two live performance instruments controlled by a Novation Launch Control XL, built in SuperCollider and edited in VS Code.
+Three live performance instruments controlled by a Novation Launch Control XL, built in SuperCollider and edited in VS Code.
 
 ## Setup
 
@@ -117,9 +117,61 @@ Load `synths/multigranular/lcxl/multigranular.syx` via Novation Components. Both
 
 ---
 
+## multifreeze
+
+**`synths/multifreeze/multifreeze.scd`**
+
+8-voice spectral freeze instrument. Each voice loads a different sample, runs it through a phase vocoder chain, and lets you freeze the spectrum at any moment with the top button. Shares sample banks with multiwarp and multigranular.
+
+### Controls (Launch Control XL)
+
+| Control | Function |
+|---|---|
+| Fader | Volume (0 to 1.5) |
+| Top button (press) | Freeze capture — samples current live spectrum into the freeze buffer; also reshuffles the scramble map |
+| Encoder 1 | Freeze amount (0.0 fully live → 1.0 fully frozen) |
+| Encoder 2 | Smear — spectral blur across neighbouring bins (0.0 none → 1.0 heavy) |
+| Encoder 3 | Scramble — bin position reassignment (0.0 none → 1.0 full scramble) |
+| Bottom button (short press) | Recall snapshot |
+| Bottom button (long press 1.5s+) | Save snapshot |
+
+The top button is a trigger, not a latch. At freeze=0 you hear the live source flowing through smear and scramble. At freeze=1 you hear the frozen spectrum — captured at the last top button press — through smear and scramble. In between, both blend.
+
+### Snapshot system
+
+Same as multiwarp: 8 slots, auto-save on save, auto-load on boot. Each snapshot stores volume, freeze, smear, scramble and semitones per voice. Fade time controlled by `~ffadeTime`. Note that the frozen spectral content itself (what was captured at the last top button press) is not stored — only the blend/processing settings are. Recalling a snapshot restores the mix state but not the specific frozen texture, so snapshots are more useful as starting points than complete restorations.
+
+### GUI
+
+- **Snapshot buttons** — same as multiwarp (cyan = filled, dim = empty)
+- **Voice strips** — one per voice, each showing:
+  - Waveform with icy blue freeze overlay (opacity = freeze amount), playhead line, capture position marker, and a brief white flash on capture
+  - Top edge bar showing freeze intensity
+  - Amp bar
+  - Four interactive knobs — **frz**, **smr**, **scr** (ice blue, track LCXL encoders); **sem** (yellow, GUI-only — no hardware equivalent due to LCXL encoder count)
+- **Randomise button** — randomises freeze, smear, scramble and semitones for all voices, and triggers a capture on each voice at its current playhead position (not volume)
+
+### To use
+
+1. Set `~fset` to your chosen letter inside the boot block in `multifreeze.scd`
+2. Set `~ffftSize` if desired (default 2048 — larger gives finer frequency resolution but higher latency)
+3. Evaluate the boot block — wait for "Ready." in the Post Window
+4. Raise faders to bring voices in
+5. Press top buttons to capture freeze snapshots of the source material
+
+### Sample sets
+
+Shares the same `samples/[set]/` directory as multiwarp and multigranular. Snapshots stored separately in `synths/multifreeze/snapshots/a.scd` etc.
+
+### LCXL template
+
+Load `synths/multifreeze/lcxl/multifreeze.syx` via Novation Components. Use the same template as multiwarp — both buttons momentary.
+
+---
+
 ## Notes
 
-- Both instruments use `MIDIOut(2)` (LCXL port) — a connected Launch Control XL is required. Boot will fail without one.
+- All instruments use `MIDIOut(2)` (LCXL port) — a connected Launch Control XL is required. Boot will fail without one.
 - Samples are not committed — add your own.
 - Snapshot files are generated locally and not committed.
 - Only one instrument should be running at a time — booting one clears the other's MIDI responders.
@@ -143,8 +195,15 @@ sc/
       snapshots/        — saved snapshots per set (generated, not committed)
       lcxl/
         multigranular.syx — LCXL template (identical config to multiwarp)
+    multifreeze/
+      multifreeze.scd   — boot and tweakables (open this)
+      engine.scd        — instrument implementation
+      gui.scd           — display window
+      snapshots/        — saved snapshots per set (generated, not committed)
+      lcxl/
+        multifreeze.syx — LCXL template (identical config to multiwarp)
   samples/
-    a/                  — sample set a (1.wav … 8.wav), shared by both instruments
+    a/                  — sample set a (1.wav … 8.wav), shared by all instruments
     b/                  — sample set b
     …
 ```
